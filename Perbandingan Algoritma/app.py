@@ -9,6 +9,7 @@ from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
 from tensorflow.keras.models import load_model
 from tensorflow.keras.losses import mse
 import pickle
+import traceback
 
 # ======================== Custom CSS Styling ========================
 st.markdown("""
@@ -78,17 +79,18 @@ if uploaded_file is not None:
         default=["LSTM", "XGBoost"]
     )
 
-    if st.sidebar.button("🔮 Jalankan Prediksi"):
-        predictions = {}
+    predictions = {}
 
-    if "LSTM" in model_choice:
-        try:
-            model = load_model('Perbandingan Algoritma/model/lstm_model.h5', custom_objects={'mse': mse})
-            lstm_pred_scaled = model.predict(X_test)
-            predictions['LSTM'] = scaler.inverse_transform(lstm_pred_scaled).flatten()
-            st.success("Model LSTM berhasil dijalankan.")
-        except:
-            st.error(f"Gagal memuat atau menjalankan model LSTM")
+    if st.sidebar.button("🔮 Jalankan Prediksi"):
+        if "LSTM" in model_choice:
+            try:
+                model = load_model('Perbandingan Algoritma/model/lstm_model.h5', custom_objects={'mse': mse})
+                lstm_pred_scaled = model.predict(X_test)
+                predictions['LSTM'] = scaler.inverse_transform(lstm_pred_scaled).flatten()
+                st.success("Model LSTM berhasil dijalankan.")
+            except Exception as e:
+                st.error(f"Gagal memuat atau menjalankan model LSTM: {e}")
+                st.text(traceback.format_exc())
 
         if "XGBoost" in model_choice:
             try:
@@ -98,66 +100,67 @@ if uploaded_file is not None:
                 xgb_pred_scaled = model.predict(X_xgb[split_index:])
                 predictions['XGBoost'] = scaler.inverse_transform(xgb_pred_scaled.reshape(-1, 1)).flatten()
                 st.success("Model XGBoost berhasil dijalankan.")
-            except:
-                st.error("Gagal memuat atau menjalankan model XGBoost.")
+            except Exception as e:
+                st.error(f"Gagal memuat atau menjalankan model XGBoost: {e}")
+                st.text(traceback.format_exc())
 
         # ======================== Visualisasi ========================
-        st.subheader("📉 Prediksi vs Aktual - 30 Hari Terakhir")
-        actual = data['Close'].iloc[-30:].values
-        fig = go.Figure()
-        fig.add_trace(go.Scatter(y=actual, mode='lines+markers', name='Actual', line=dict(color='black')))
+        if predictions:
+            st.subheader("📉 Prediksi vs Aktual - 30 Hari Terakhir")
+            actual = data['Close'].iloc[-30:].values
+            fig = go.Figure()
+            fig.add_trace(go.Scatter(y=actual, mode='lines+markers', name='Actual', line=dict(color='black')))
 
-        for name, pred in predictions.items():
-            fig.add_trace(go.Scatter(y=pred[-30:], mode='lines+markers', name=name))
+            for name, pred in predictions.items():
+                fig.add_trace(go.Scatter(y=pred[-30:], mode='lines+markers', name=name))
 
-        fig.update_layout(
-            title="Perbandingan Prediksi Harga BTC (30 Hari Terakhir)",
-            plot_bgcolor='rgba(245, 245, 255, 1)',
-            paper_bgcolor='rgba(245, 245, 255, 1)',
-            xaxis_title='Hari',
-            yaxis_title='Harga BTC (USD)',
-            legend_title="Model"
-        )
-        st.plotly_chart(fig, use_container_width=True)
+            fig.update_layout(
+                title="Perbandingan Prediksi Harga BTC (30 Hari Terakhir)",
+                plot_bgcolor='rgba(245, 245, 255, 1)',
+                paper_bgcolor='rgba(245, 245, 255, 1)',
+                xaxis_title='Hari',
+                yaxis_title='Harga BTC (USD)',
+                legend_title="Model"
+            )
+            st.plotly_chart(fig, use_container_width=True)
 
-        # ======================== Evaluasi ========================
-        st.subheader("📊 Evaluasi Model")
+            # ======================== Evaluasi ========================
+            st.subheader("📊 Evaluasi Model")
+            model_metrics = {}
 
-        model_metrics = {}
+            for name, pred in predictions.items():
+                rmse = np.sqrt(mean_squared_error(actual, pred[-30:]))
+                mae = mean_absolute_error(actual, pred[-30:])
+                mape = np.mean(np.abs((actual - pred[-30:]) / actual)) * 100
+                r2 = r2_score(actual, pred[-30:])
 
-        for name, pred in predictions.items():
-            rmse = np.sqrt(mean_squared_error(actual, pred[-30:]))
-            mae = mean_absolute_error(actual, pred[-30:])
-            mape = np.mean(np.abs((actual - pred[-30:]) / actual)) * 100
-            r2 = r2_score(actual, pred[-30:])
+                model_metrics[name] = {
+                    'RMSE': rmse,
+                    'MAE': mae,
+                    'MAPE': mape,
+                    'R2': r2
+                }
 
-            model_metrics[name] = {
-                'RMSE': rmse,
-                'MAE': mae,
-                'MAPE': mape,
-                'R2': r2
-            }
+                st.markdown(f"**{name}**")
+                st.write(f"- RMSE: `${rmse:,.2f}`")
+                st.write(f"- MAE: `${mae:,.2f}`")
+                st.write(f"- MAPE: `{mape:.2f}%`")
+                st.write(f"- R² Score: `{r2:.4f}`")
 
-            st.markdown(f"**{name}**")
-            st.write(f"- RMSE: `${rmse:,.2f}`")
-            st.write(f"- MAE: `${mae:,.2f}`")
-            st.write(f"- MAPE: `{mape:.2f}%`")
-            st.write(f"- R² Score: `{r2:.4f}`")
+            # ======================== Kesimpulan Otomatis ========================
+            st.subheader("📝 Kesimpulan")
+            if len(model_metrics) > 1:
+                sorted_models = sorted(model_metrics.items(), key=lambda x: (x[1]['MAE'], -x[1]['R2']))
+                best_model = sorted_models[0][0]
+                best_stats = sorted_models[0][1]
 
-        # ======================== Kesimpulan Otomatis ========================
-        st.subheader("📝 Kesimpulan")
-        if len(model_metrics) > 1:
-            sorted_models = sorted(model_metrics.items(), key=lambda x: (x[1]['MAE'], -x[1]['R2']))
-            best_model = sorted_models[0][0]
-            best_stats = sorted_models[0][1]
+                st.markdown(f"""
+                Berdasarkan hasil evaluasi terhadap 30 hari terakhir, model **{best_model}** memberikan performa terbaik:
 
-            st.markdown(f"""
-            Berdasarkan hasil evaluasi terhadap 30 hari terakhir, model **{best_model}** memberikan performa terbaik:
+                - MAE terendah: **${best_stats['MAE']:,.2f}**
+                - R² Score tertinggi: **{best_stats['R2']:.4f}**
 
-            - MAE terendah: **${best_stats['MAE']:,.2f}**
-            - R² Score tertinggi: **{best_stats['R2']:.4f}**
-
-            Hal ini menunjukkan bahwa model {best_model} mampu memprediksi harga Bitcoin dengan kesalahan kecil dan ketepatan yang baik terhadap variasi data aktual.
-            """)
-        else:
-            st.markdown("Hanya satu model yang dipilih, sehingga tidak ada perbandingan performa.")
+                Hal ini menunjukkan bahwa model {best_model} mampu memprediksi harga Bitcoin dengan kesalahan kecil dan ketepatan yang baik terhadap variasi data aktual.
+                """)
+            else:
+                st.markdown("Hanya satu model yang dipilih, sehingga tidak ada perbandingan performa.")
