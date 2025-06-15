@@ -83,12 +83,13 @@ if uploaded_file is not None:
 
         if "LSTM" in model_choice:
             try:
-                model = load_model('Perbandingan Algoritma/model/lstm_model.h5', custom_objects={'mse': mse})
-                lstm_pred_scaled = model.predict(X_test)
+                model = load_model('model/lstm_model.h5', custom_objects={'mse': mse})
+                    lstm_pred_scaled = model.predict(X_test)
                 predictions['LSTM'] = scaler.inverse_transform(lstm_pred_scaled).flatten()
                 st.success("Model LSTM berhasil dijalankan.")
-            except:
-                st.error("Gagal memuat atau menjalankan model LSTM.")
+           except Exception as e:
+                st.error(f"Gagal memuat atau menjalankan model LSTM: {e}")
+
 
         if "XGBoost" in model_choice:
             try:
