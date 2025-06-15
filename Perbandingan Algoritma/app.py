@@ -46,7 +46,7 @@ if uploaded_file is not None:
     st.success("Dataset berhasil diunggah!")
 else:
     st.info("Tidak ada file diunggah, menggunakan dataset default dari GitHub.")
-    url = "https://raw.githubusercontent.com/username/repo/main/BITCOIN2025_FORMAT.csv"  # Ganti dengan URL raw CSV kamu
+    url = "https://raw.githubusercontent.com/Nobody-slay/MyMachineLearning/refs/heads/main/Perbandingan%20Algoritma/BITCOIN2025_FORMAT.csv"
     try:
         df = pd.read_csv(url)
         st.success("Dataset berhasil dimuat dari GitHub.")
