@@ -83,7 +83,7 @@ if uploaded_file is not None:
 
         if "LSTM" in model_choice:
             try:
-                model = load_model('model/lstm_model.h5', custom_objects={'mse': mse})
+                model = load_model('Perbandingan Algoritma/model/lstm_model.h5', custom_objects={'mse': mse})
                 lstm_pred_scaled = model.predict(X_test)
                 predictions['LSTM'] = scaler.inverse_transform(lstm_pred_scaled).flatten()
                 st.success("Model LSTM berhasil dijalankan.")
@@ -92,7 +92,7 @@ if uploaded_file is not None:
 
         if "XGBoost" in model_choice:
             try:
-                with open('model/xgboost_model.pkl', 'rb') as file:
+                with open('Perbandingan Algoritma/model/xgboost_model.pkl', 'rb') as file:
                     model = pickle.load(file)
                 X_xgb = X_seq.reshape((X_seq.shape[0], -1))
                 xgb_pred_scaled = model.predict(X_xgb[split_index:])
