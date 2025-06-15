@@ -87,7 +87,7 @@ if uploaded_file is not None:
             lstm_pred_scaled = model.predict(X_test)
             predictions['LSTM'] = scaler.inverse_transform(lstm_pred_scaled).flatten()
             st.success("Model LSTM berhasil dijalankan.")
-        except Exception as e:
+        except:
             st.error(f"Gagal memuat atau menjalankan model LSTM: {e}")
 
         if "XGBoost" in model_choice:
