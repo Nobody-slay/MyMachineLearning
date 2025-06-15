@@ -1,7 +1,7 @@
 streamlit==1.34.0
+tensorflow==2.15.0
 pandas==1.5.3
-numpy==1.23.5
-plotly==5.9.0
-scikit-learn==1.2.2
-tensorflow==2.11.0
-xgboost==1.7.6
+numpy==1.24.3
+scikit-learn
+xgboost
+plotly
