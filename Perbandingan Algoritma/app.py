@@ -33,7 +33,7 @@ st.markdown("""
 
 # ======================== Header ========================
 st.markdown("""
-    <h1 style='text-align: center;'>📊 Perbandingan Algoritma Harga Bitcoin menggunakan History</h1>
+    <h1 style='text-align: center;'>Perbandingan Algoritma Harga Bitcoin menggunakan data History</h1>
     <h4 style='text-align: center;'>Menggunakan Model LSTM & XGBoost</h4>
 """, unsafe_allow_html=True)
 
