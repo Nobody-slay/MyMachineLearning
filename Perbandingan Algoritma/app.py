@@ -38,14 +38,14 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # ======================== Upload Dataset / Load Default ========================
-    st.info("Menggunakan dataset default dari GitHub.")
-    url = "https://raw.githubusercontent.com/Nobody-slay/MyMachineLearning/refs/heads/main/Perbandingan%20Algoritma/BITCOIN2025_FORMAT.csv"
-    try:
-        df = pd.read_csv(url)
-        st.success("Dataset berhasil dimuat dari GitHub.")
-    except Exception as e:
-        st.error(f"Gagal memuat dataset dari GitHub: {e}")
-        st.stop()
+st.info("Menggunakan dataset default dari GitHub.")
+url = "https://raw.githubusercontent.com/Nobody-slay/MyMachineLearning/refs/heads/main/Perbandingan%20Algoritma/BITCOIN2025_FORMAT.csv"
+try:
+    df = pd.read_csv(url)
+    st.success("Dataset berhasil dimuat dari GitHub.")
+except Exception as e:
+    st.error(f"Gagal memuat dataset dari GitHub: {e}")
+    st.stop()
 
 # ======================== Preprocessing ========================
 df['Date'] = pd.to_datetime(df['Date'], format="%d-%m-%Y")
