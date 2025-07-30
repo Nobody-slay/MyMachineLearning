@@ -38,14 +38,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # ======================== Upload Dataset / Load Default ========================
-st.write("Upload dataset Bitcoin (format seperti BITCOIN2025_FORMAT.csv)")
-uploaded_file = st.file_uploader("Upload file CSV", type=["csv"])
-
-if uploaded_file is not None:
-    df = pd.read_csv(uploaded_file)
-    st.success("Dataset berhasil diunggah!")
-else:
-    st.info("Tidak ada file diunggah, menggunakan dataset default dari GitHub.")
+    st.info("Menggunakan dataset default dari GitHub.")
     url = "https://raw.githubusercontent.com/Nobody-slay/MyMachineLearning/refs/heads/main/Perbandingan%20Algoritma/BITCOIN2025_FORMAT.csv"
     try:
         df = pd.read_csv(url)
